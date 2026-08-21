@@ -1,4 +1,6 @@
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL;
+import { getToken , removeToken} from '../utils/tokens';
+
+const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
 
 export class ApiError extends Error {
   status: number;
@@ -7,6 +9,13 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
   }
+}
+
+interface FetchOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  body?: any;
+  requiresAuth?: boolean;
+  headers?: Record<string, string>;
 }
 
 export async function apiFetch<T>(
@@ -39,4 +48,44 @@ export async function apiFetch<T>(
   }
 
   return res.json();
+}
+
+export async function apiAuthFetch<T>(
+  path: string,
+  options: FetchOptions = {}
+): Promise<T> {
+  const { method = 'GET', body, requiresAuth = true, headers = {} } = options;
+
+  // Add Bearer token if authentication is required
+  if (requiresAuth) {
+    const token = getToken();
+    if (!token) {
+      throw new Error('Authentication required. Please log in.');
+    }
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const requestOptions: RequestInit = {
+    method,
+    headers,
+    credentials: 'include',
+  };
+
+  if (body && method !== 'GET') {
+    requestOptions.body = JSON.stringify(body);
+  }
+
+  try {
+    const response = await apiFetch<T>(path, requestOptions);
+    return response;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      removeToken;
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired. Please log in again.');
+    }
+    throw error;
+  }
 }
