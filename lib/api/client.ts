@@ -80,7 +80,7 @@ export async function apiAuthFetch<T>(
     return response;
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
-      removeToken;
+      removeToken();
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
