@@ -30,12 +30,12 @@ export default function TeamCard({team}:{team:Team}){
   //     return <p>{error}</p>
   //   }
     return(
-      <Card>
+      <Card className="h-full">
         <CardHeader>
-          <CardTitle>{team.name}</CardTitle>
+          <CardTitle className="text-primary">{team.name}</CardTitle>
         </CardHeader>
             <CardContent>
-              <p>{team.description}</p>
+              <p className="text-sm text-muted-foreground">{team.description}</p>
             </CardContent>
       </Card>
     );

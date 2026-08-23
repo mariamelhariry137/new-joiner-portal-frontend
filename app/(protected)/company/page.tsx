@@ -32,10 +32,12 @@ export default function CompanyPage(){
         }, []);
 
     return(
-        <main>
-            <h1>Company Hub</h1>
+        <main className="min-h-screen bg-background">
+            <h1 className="mx-auto max-w-7xl px-4 pt-8 text-3xl font-bold text-foreground sm:px-6 lg:px-8">
+                Company <span className="text-primary">Hub</span>
+            </h1>
             <CompanyGrid teams={teams} contacts={contacts} policies={policies}
-                learningResources={learningResources}/>
+            learningResources={learningResources}/>
         </main>
     )
 }

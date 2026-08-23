@@ -31,12 +31,12 @@ export default function PolicyCard({policy}:{policy:Policy}){
   //   }
     
     return(
-      <Card>
+      <Card className="h-full">
         <CardHeader>
-          <CardTitle>{policy.title}</CardTitle>
+          <CardTitle className="text-primary">{policy.title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>{policy.description}</p>
+          <p className="text-sm text-muted-foreground">{policy.description}</p>
         </CardContent>
       </Card>
     )

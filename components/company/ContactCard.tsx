@@ -31,15 +31,15 @@ export default function ContactCard({contact}:{contact: Contact}){
   //   }
     
     return(
-      <Card>
+      <Card className="h-full">
         <CardHeader>
-          <CardTitle> {contact.name}</CardTitle>
+          <CardTitle className="text-primary">{contact.name}</CardTitle>
         </CardHeader>
 
-        <CardContent>
-          <p>Email : {contact.email}</p>
-          <p>Phone : {contact.phone}</p>
-          <p>Team Id {contact.team?.id}</p>
+        <CardContent className="flex flex-col gap-1 text-sm text-muted-foreground">
+          <p>Email: <span className="text-foreground">{contact.email}</span></p>
+          <p>Phone: <span className="text-foreground">{contact.phone}</span></p>
+          <p>Team Id: <span className="text-foreground">{contact.team?.id}</span></p>
         </CardContent>
       </Card>
     )

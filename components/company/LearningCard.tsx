@@ -31,15 +31,15 @@ export default function learningResourcesCard({resource}:{resource: LearningReso
   //   }
     
     return(
-      <Card>
+      <Card className="h-full">
         <CardHeader>
-        <CardTitle>{resource.title}</CardTitle>
+        <CardTitle className="text-primary">{resource.title}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p>{resource.description}</p>
+        <CardContent className="flex-1">
+          <p className="text-sm text-muted-foreground">{resource.description}</p>
         </CardContent>
         <CardFooter>
-          <p>{resource.url}</p>
+          <p className="truncate text-sm text-accent-foreground underline">{resource.url}</p>
         </CardFooter>
       </Card>
     )
