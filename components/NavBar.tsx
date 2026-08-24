@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   NavigationMenu,
@@ -22,6 +22,7 @@ import { LayoutDashboard, ClipboardCheck, Building2, LogOut } from 'lucide-react
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/onboarding', label: 'Onboarding', icon: ClipboardCheck },
   { href: '/company', label: 'Company', icon: Building2 },
 ];
 
@@ -35,6 +36,7 @@ function getInitials(name: string) {
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const storedUser = getStoredUser();
 
   const currentUser = {
@@ -103,8 +105,11 @@ export default function Navbar() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-           <DropdownMenuItem className="cursor-pointer" onSelect={() => (window.location.href = '/profile')}>
-                Profile
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onSelect={() => router.push('/profile')}
+            >
+              Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">

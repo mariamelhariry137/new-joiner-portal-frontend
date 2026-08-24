@@ -4,24 +4,38 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { onboarding } from "@/lib/api/onboarding";
 import { ChecklistItemRow } from "@/components/onboarding/ChecklistItemRow";
-import { ChecklistItemDrawer } from "@/components/onboarding/ChecklistItemDrawer";
+import {
+  ChecklistItemDrawer,
+  toBulletPoints,
+} from "@/components/onboarding/ChecklistItemDrawer";
 import type { ProgressItem } from "@/types/onboarding";
 import { ApiError } from "@/lib/api/client";
+import { getStoredUser } from "@/lib/auth/token";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getStoredUser } from "@/lib/auth/token";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   AlertCircle,
   ArrowRight,
   Building2,
   CheckCircle2,
   Circle,
+  FileText,
   ListChecks,
   Lightbulb,
+  Loader2,
   PartyPopper,
   Sparkles,
 } from "lucide-react";
@@ -37,8 +51,7 @@ export default function DashboardPage() {
   const [pendingItemId, setPendingItemId] = useState<number | null>(null);
   const [errorItemId, setErrorItemId] = useState<number | null>(null);
 
-  const user = getStoredUser();
-  const firstName = user?.firstName ?? "there";
+  const [testDialogOpen, setTestDialogOpen] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -97,11 +110,19 @@ export default function DashboardPage() {
     }
   }
 
+  const storedUser = getStoredUser();
+  const firstName = storedUser?.firstName ?? "there";
+
   const completionPercentage = progress[0]?.completionPercentage ?? 0;
   const completedCount = progress.filter((p) => p.completed).length;
   const remainingCount = progress.length - completedCount;
   const isComplete = progress.length > 0 && completedCount === progress.length;
   const nextItem = progress.find((p) => !p.completed);
+
+  const drawerItem = selectedItem
+    ? progress.find((p) => p.checklistItemId === selectedItem.checklistItemId) ??
+      selectedItem
+    : null;
 
   if (loading) {
     return (
@@ -141,13 +162,18 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Welcome back, {firstName}
-        </h1>
-        <p className="text-muted-foreground mt-1.5">
-          Here&apos;s where you stand in your onboarding journey.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Welcome back, {firstName}
+          </h1>
+          <p className="text-muted-foreground mt-1.5">
+            Here&apos;s where you stand in your onboarding journey.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setTestDialogOpen(true)}>
+          Test card view
+        </Button>
       </div>
 
       {/* Stat strip */}
@@ -302,13 +328,15 @@ export default function DashboardPage() {
           </Link>
 
           <Card className="border-amber-200 bg-amber-50 shadow-sm dark:border-amber-900 dark:bg-amber-950/30">
-            <CardContent className="flex gap-3 py-4">
-              <Lightbulb className="h-5 w-5 shrink-0 text-amber-600" />
-              <div>
-                <p className="text-sm font-medium">Tip</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Click any checklist item to see more details and track when it
-                  was completed.
+            <CardContent className="flex gap-3 p-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40">
+                <Lightbulb className="h-4 w-4 text-amber-600" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium leading-none">Tip</p>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Click any checklist item to see more details and track when
+                  it was completed.
                 </p>
               </div>
             </CardContent>
@@ -317,17 +345,85 @@ export default function DashboardPage() {
       </div>
 
       <ChecklistItemDrawer
-  item={
-    selectedItem
-      ? progress.find((p) => p.checklistItemId === selectedItem.checklistItemId) ??
-        selectedItem
-      : null
-  }
-  open={drawerOpen}
-  onOpenChange={setDrawerOpen}
-  onToggle={() => selectedItem && handleToggle(selectedItem)}
-  isPending={pendingItemId === selectedItem?.checklistItemId}
-/>
+        item={drawerItem}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onToggle={() => selectedItem && handleToggle(selectedItem)}
+        isPending={pendingItemId === selectedItem?.checklistItemId}
+      />
+
+      <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader className="items-center text-center">
+            <div
+              className={cn(
+                "flex h-14 w-14 items-center justify-center rounded-full",
+                nextItem?.completed
+                  ? "bg-green-600 text-white"
+                  : "bg-primary/10 text-primary"
+              )}
+            >
+              {nextItem?.completed ? (
+                <CheckCircle2 className="h-7 w-7" />
+              ) : (
+                <FileText className="h-7 w-7" />
+              )}
+            </div>
+            <DialogTitle className="mt-2 text-lg">
+              {nextItem?.title ?? "Sample task"}
+            </DialogTitle>
+            <Badge
+              variant={nextItem?.completed ? "default" : "secondary"}
+              className={
+                nextItem?.completed ? "bg-green-600 hover:bg-green-600" : ""
+              }
+            >
+              {nextItem?.completed ? "Completed" : "Not completed"}
+            </Badge>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <Separator />
+
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Description</h3>
+              {nextItem?.description ? (
+                <ul className="space-y-2">
+                  {toBulletPoints(nextItem.description).map((sentence, index) => (
+                    <li
+                      key={index}
+                      className="flex gap-2 text-sm leading-relaxed text-muted-foreground"
+                    >
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
+                      <span>{sentence}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  This is a dummy description to preview how it looks in a
+                  centered card.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <Button
+            className="w-full"
+            disabled={!nextItem || pendingItemId === nextItem.checklistItemId}
+            onClick={() => nextItem && handleToggle(nextItem)}
+            variant={nextItem?.completed ? "outline" : "default"}
+          >
+            {nextItem && pendingItemId === nextItem.checklistItemId ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : nextItem?.completed ? (
+              "Mark as incomplete"
+            ) : (
+              "Mark as complete"
+            )}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

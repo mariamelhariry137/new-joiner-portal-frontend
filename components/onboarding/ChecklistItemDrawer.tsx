@@ -30,7 +30,7 @@ function formatCompletedAt(dateString?: string | null) {
   });
 }
 
-function toBulletPoints(description: string): string[] {
+export function toBulletPoints(description: string): string[] {
   return description
     .split(/(?<=[.!?])\s+(?=[A-Z])/)
     .map((sentence) => sentence.trim())
