@@ -1,24 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { onboarding } from "@/lib/api/onboarding";
 import { ChecklistItemRow } from "@/components/onboarding/ChecklistItemRow";
-import {
-  ChecklistItemDrawer,
-  toBulletPoints,
-} from "@/components/onboarding/ChecklistItemDrawer";
+import { ChecklistItemDialog } from "@/components/onboarding/ChecklistItemDialog";
 import type { ProgressItem } from "@/types/onboarding";
 import { ApiError } from "@/lib/api/client";
 import { getStoredUser } from "@/lib/auth/token";
-import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -32,10 +27,8 @@ import {
   Building2,
   CheckCircle2,
   Circle,
-  FileText,
   ListChecks,
   Lightbulb,
-  Loader2,
   PartyPopper,
   Sparkles,
 } from "lucide-react";
@@ -46,12 +39,13 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [selectedItem, setSelectedItem] = useState<ProgressItem | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const [pendingItemId, setPendingItemId] = useState<number | null>(null);
   const [errorItemId, setErrorItemId] = useState<number | null>(null);
 
-  const [testDialogOpen, setTestDialogOpen] = useState(false);
+  const [celebrationOpen, setCelebrationOpen] = useState(false);
+  const hasCelebrated = useRef(false);
 
   useEffect(() => {
     async function load() {
@@ -73,9 +67,9 @@ export default function DashboardPage() {
     load();
   }, []);
 
-  function handleOpenDrawer(item: ProgressItem) {
+  function handleOpenDialog(item: ProgressItem) {
     setSelectedItem(item);
-    setDrawerOpen(true);
+    setDialogOpen(true);
   }
 
   async function handleToggle(item: ProgressItem) {
@@ -119,10 +113,23 @@ export default function DashboardPage() {
   const isComplete = progress.length > 0 && completedCount === progress.length;
   const nextItem = progress.find((p) => !p.completed);
 
-  const drawerItem = selectedItem
+  const dialogItem = selectedItem
     ? progress.find((p) => p.checklistItemId === selectedItem.checklistItemId) ??
       selectedItem
     : null;
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (isComplete && !hasCelebrated.current) {
+      hasCelebrated.current = true;
+      setCelebrationOpen(true);
+    }
+
+    if (!isComplete) {
+      hasCelebrated.current = false;
+    }
+  }, [isComplete, loading]);
 
   if (loading) {
     return (
@@ -162,18 +169,13 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Welcome back, {firstName}
-          </h1>
-          <p className="text-muted-foreground mt-1.5">
-            Here&apos;s where you stand in your onboarding journey.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => setTestDialogOpen(true)}>
-          Test card view
-        </Button>
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Welcome back, {firstName}
+        </h1>
+        <p className="text-muted-foreground mt-1.5">
+          Here&apos;s where you stand in your onboarding journey.
+        </p>
       </div>
 
       {/* Stat strip */}
@@ -297,7 +299,7 @@ export default function DashboardPage() {
                   <ChecklistItemRow
                     key={item.checklistItemId}
                     item={item}
-                    onOpenDrawer={() => handleOpenDrawer(item)}
+                    onOpenDrawer={() => handleOpenDialog(item)}
                     onToggle={() => handleToggle(item)}
                     isPending={pendingItemId === item.checklistItemId}
                     hasError={errorItemId === item.checklistItemId}
@@ -344,83 +346,29 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <ChecklistItemDrawer
-        item={drawerItem}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onToggle={() => selectedItem && handleToggle(selectedItem)}
-        isPending={pendingItemId === selectedItem?.checklistItemId}
+      <ChecklistItemDialog
+        item={dialogItem}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onToggle={() => dialogItem && handleToggle(dialogItem)}
+        isPending={pendingItemId === dialogItem?.checklistItemId}
       />
 
-      <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+      <Dialog open={celebrationOpen} onOpenChange={setCelebrationOpen}>
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader className="items-center text-center">
-            <div
-              className={cn(
-                "flex h-14 w-14 items-center justify-center rounded-full",
-                nextItem?.completed
-                  ? "bg-green-600 text-white"
-                  : "bg-primary/10 text-primary"
-              )}
-            >
-              {nextItem?.completed ? (
-                <CheckCircle2 className="h-7 w-7" />
-              ) : (
-                <FileText className="h-7 w-7" />
-              )}
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-600/10">
+              <PartyPopper className="h-8 w-8 text-green-600" />
             </div>
-            <DialogTitle className="mt-2 text-lg">
-              {nextItem?.title ?? "Sample task"}
+            <DialogTitle className="mt-2 text-xl">
+              You&apos;re all caught up!
             </DialogTitle>
-            <Badge
-              variant={nextItem?.completed ? "default" : "secondary"}
-              className={
-                nextItem?.completed ? "bg-green-600 hover:bg-green-600" : ""
-              }
-            >
-              {nextItem?.completed ? "Completed" : "Not completed"}
-            </Badge>
+            <DialogDescription className="text-center">
+              Every onboarding task has been completed. Nice work.
+            </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4">
-            <Separator />
-
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium">Description</h3>
-              {nextItem?.description ? (
-                <ul className="space-y-2">
-                  {toBulletPoints(nextItem.description).map((sentence, index) => (
-                    <li
-                      key={index}
-                      className="flex gap-2 text-sm leading-relaxed text-muted-foreground"
-                    >
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
-                      <span>{sentence}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  This is a dummy description to preview how it looks in a
-                  centered card.
-                </p>
-              )}
-            </div>
-          </div>
-
-          <Button
-            className="w-full"
-            disabled={!nextItem || pendingItemId === nextItem.checklistItemId}
-            onClick={() => nextItem && handleToggle(nextItem)}
-            variant={nextItem?.completed ? "outline" : "default"}
-          >
-            {nextItem && pendingItemId === nextItem.checklistItemId ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : nextItem?.completed ? (
-              "Mark as incomplete"
-            ) : (
-              "Mark as complete"
-            )}
+          <Button className="w-full" onClick={() => setCelebrationOpen(false)}>
+            Nice
           </Button>
         </DialogContent>
       </Dialog>
