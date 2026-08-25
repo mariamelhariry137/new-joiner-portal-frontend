@@ -34,7 +34,7 @@ export default function ProfilePage() {
       }
 
       try {
-        const data = await apiAuthFetch<Profile>("/me");
+        const data = await apiAuthFetch<Profile>("/api/auth/me");
 
         setProfile(data);
         setFirstName(data.firstName);

@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import {
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/api/client";
 import {
+  getToken,
   setToken,
   setStoredUser,
+  clearAuth,
 } from "@/lib/auth/token";
 type LoginResponse = {
   id: number;
@@ -19,7 +28,56 @@ type LoginResponse = {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
+const registered =
+  searchParams.get("registered") === "true";
+useEffect(() => {
+  const token = getToken();
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    const payloadPart = token.split(".")[1];
+
+    if (!payloadPart) {
+      clearAuth();
+      return;
+    }
+
+    const normalizedPayload = payloadPart
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+    const paddedPayload =
+      normalizedPayload +
+      "=".repeat(
+        (4 - (normalizedPayload.length % 4)) % 4
+      );
+
+    const payload = JSON.parse(
+      atob(paddedPayload)
+    );
+
+    const currentTime =
+      Math.floor(Date.now() / 1000);
+
+    if (
+      payload.exp &&
+      payload.exp <= currentTime
+    ) {
+      clearAuth();
+      return;
+    }
+
+    // User is already logged in.
+    router.replace("/dashboard");
+  } catch {
+    clearAuth();
+  }
+}, [router]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -58,7 +116,7 @@ setStoredUser({
   lastName: response.lastName,
 });
 
-      router.push("/dashboard");
+      router.replace("/profile");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -135,6 +193,12 @@ setStoredUser({
                 Enter your email and password to continue.
               </p>
             </div>
+            {registered && (
+  <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+    Your account has been created successfully.
+    Please sign in to continue.
+  </div>
+)}
 
             <form onSubmit={handleSubmit} className="space-y-5">
 

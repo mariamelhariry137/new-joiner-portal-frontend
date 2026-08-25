@@ -57,10 +57,13 @@ export async function apiAuthFetch<T>(
 ): Promise<T> {
   const { method = 'GET', body, requiresAuth = true, headers = {} } = options;
 
-  // Add Bearer token if authentication is required
   if (requiresAuth) {
     const token = getToken();
     if (!token) {
+      clearAuth();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
       throw new Error('Authentication required. Please log in.');
     }
     headers.Authorization = `Bearer ${token}`;
@@ -85,9 +88,8 @@ export async function apiAuthFetch<T>(
         window.location.href = '/login';
       }
       throw new Error('Session expired. Please log in again.');
-      
     }
     throw error;
   }
-  
 }
+  
