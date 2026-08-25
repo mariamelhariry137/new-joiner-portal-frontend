@@ -1,4 +1,4 @@
-import { getToken , removeToken} from '../utils/tokens';
+import { getToken, clearAuth } from '../auth/token';
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
 
@@ -50,6 +50,7 @@ export async function apiFetch<T>(
   return res.json();
 }
 
+
 export async function apiAuthFetch<T>(
   path: string,
   options: FetchOptions = {}
@@ -68,7 +69,6 @@ export async function apiAuthFetch<T>(
   const requestOptions: RequestInit = {
     method,
     headers,
-    credentials: 'include',
   };
 
   if (body && method !== 'GET') {
@@ -80,12 +80,14 @@ export async function apiAuthFetch<T>(
     return response;
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
-      removeToken();
+      clearAuth();
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
       throw new Error('Session expired. Please log in again.');
+      
     }
     throw error;
   }
+  
 }

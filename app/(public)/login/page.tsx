@@ -3,7 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/api/client";
-
+import {
+  setToken,
+  setStoredUser,
+} from "@/lib/auth/token";
 type LoginResponse = {
   id: number;
   email: string;
@@ -46,7 +49,14 @@ export default function LoginPage() {
 
       // Temporary frontend token storage.
       // We can improve the auth-storage approach afterward.
-      localStorage.setItem("accessToken", response.accessToken);
+      setToken(response.accessToken);
+
+setStoredUser({
+  id: response.id,
+  email: response.email,
+  firstName: response.firstName,
+  lastName: response.lastName,
+});
 
       router.push("/dashboard");
     } catch (err) {
