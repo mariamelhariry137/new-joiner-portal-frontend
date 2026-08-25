@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 import {
@@ -174,6 +174,12 @@ export default function Navbar() {
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onSelect={() => router.push('/profile')}
+            >
+              Profile
+            </DropdownMenuItem>
 
             {/* Profile */}
             <DropdownMenuGroup>

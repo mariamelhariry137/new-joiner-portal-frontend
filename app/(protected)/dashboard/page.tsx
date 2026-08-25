@@ -1,19 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { onboarding } from "@/lib/api/onboarding";
 import { ChecklistItemRow } from "@/components/onboarding/ChecklistItemRow";
-import { ChecklistItemDrawer } from "@/components/onboarding/ChecklistItemDrawer";
+import { ChecklistItemDialog } from "@/components/onboarding/ChecklistItemDialog";
 import type { ProgressItem } from "@/types/onboarding";
 import { ApiError } from "@/lib/api/client";
+import { getStoredUser } from "@/lib/auth/token";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getStoredUser } from "@/lib/auth/token";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   AlertCircle,
   ArrowRight,
@@ -32,13 +39,13 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [selectedItem, setSelectedItem] = useState<ProgressItem | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const [pendingItemId, setPendingItemId] = useState<number | null>(null);
   const [errorItemId, setErrorItemId] = useState<number | null>(null);
 
-  const user = getStoredUser();
-  const firstName = user?.firstName ?? "there";
+  const [celebrationOpen, setCelebrationOpen] = useState(false);
+  const hasCelebrated = useRef(false);
 
   useEffect(() => {
     async function load() {
@@ -60,9 +67,9 @@ export default function DashboardPage() {
     load();
   }, []);
 
-  function handleOpenDrawer(item: ProgressItem) {
+  function handleOpenDialog(item: ProgressItem) {
     setSelectedItem(item);
-    setDrawerOpen(true);
+    setDialogOpen(true);
   }
 
   async function handleToggle(item: ProgressItem) {
@@ -97,11 +104,32 @@ export default function DashboardPage() {
     }
   }
 
+  const storedUser = getStoredUser();
+  const firstName = storedUser?.firstName ?? "there";
+
   const completionPercentage = progress[0]?.completionPercentage ?? 0;
   const completedCount = progress.filter((p) => p.completed).length;
   const remainingCount = progress.length - completedCount;
   const isComplete = progress.length > 0 && completedCount === progress.length;
   const nextItem = progress.find((p) => !p.completed);
+
+  const dialogItem = selectedItem
+    ? progress.find((p) => p.checklistItemId === selectedItem.checklistItemId) ??
+      selectedItem
+    : null;
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (isComplete && !hasCelebrated.current) {
+      hasCelebrated.current = true;
+      setCelebrationOpen(true);
+    }
+
+    if (!isComplete) {
+      hasCelebrated.current = false;
+    }
+  }, [isComplete, loading]);
 
   if (loading) {
     return (
@@ -271,7 +299,7 @@ export default function DashboardPage() {
                   <ChecklistItemRow
                     key={item.checklistItemId}
                     item={item}
-                    onOpenDrawer={() => handleOpenDrawer(item)}
+                    onOpenDrawer={() => handleOpenDialog(item)}
                     onToggle={() => handleToggle(item)}
                     isPending={pendingItemId === item.checklistItemId}
                     hasError={errorItemId === item.checklistItemId}
@@ -302,13 +330,15 @@ export default function DashboardPage() {
           </Link>
 
           <Card className="border-amber-200 bg-amber-50 shadow-sm dark:border-amber-900 dark:bg-amber-950/30">
-            <CardContent className="flex gap-3 py-4">
-              <Lightbulb className="h-5 w-5 shrink-0 text-amber-600" />
-              <div>
-                <p className="text-sm font-medium">Tip</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Click any checklist item to see more details and track when it
-                  was completed.
+            <CardContent className="flex gap-3 p-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40">
+                <Lightbulb className="h-4 w-4 text-amber-600" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium leading-none">Tip</p>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Click any checklist item to see more details and track when
+                  it was completed.
                 </p>
               </div>
             </CardContent>
@@ -316,18 +346,32 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <ChecklistItemDrawer
-  item={
-    selectedItem
-      ? progress.find((p) => p.checklistItemId === selectedItem.checklistItemId) ??
-        selectedItem
-      : null
-  }
-  open={drawerOpen}
-  onOpenChange={setDrawerOpen}
-  onToggle={() => selectedItem && handleToggle(selectedItem)}
-  isPending={pendingItemId === selectedItem?.checklistItemId}
-/>
+      <ChecklistItemDialog
+        item={dialogItem}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onToggle={() => dialogItem && handleToggle(dialogItem)}
+        isPending={pendingItemId === dialogItem?.checklistItemId}
+      />
+
+      <Dialog open={celebrationOpen} onOpenChange={setCelebrationOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader className="items-center text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-600/10">
+              <PartyPopper className="h-8 w-8 text-green-600" />
+            </div>
+            <DialogTitle className="mt-2 text-xl">
+              You&apos;re all caught up!
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Every onboarding task has been completed. Nice work.
+            </DialogDescription>
+          </DialogHeader>
+          <Button className="w-full" onClick={() => setCelebrationOpen(false)}>
+            Nice
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
