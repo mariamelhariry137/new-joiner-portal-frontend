@@ -2,7 +2,7 @@
 
 import CompanyGrid from "@/components/company/CompanyGrid"
 import { contentApi, Team, Policy, Contact,LearningResource } from "@/lib/api/content"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@base-ui/react"
 import { ArrowUpIcon } from "lucide-react"
@@ -15,8 +15,13 @@ export default function CompanyPage(){
     const [learningResources, setLearningResources]=useState<LearningResource[]>([])
 
 
+    const hasFetched = useRef(false);
+
     useEffect(
         ()=>{
+            if (hasFetched.current) return;
+            hasFetched.current = true;
+
             async function loadData(){
                 const[teamsData,contactsData,
                     policiesData,learningData]=
@@ -30,7 +35,7 @@ export default function CompanyPage(){
                 setContacts(contactsData);
                 setPolicies(policiesData);
                 setLearningResources(learningData);
-            } 
+            }
             loadData();
         }, []);
 
