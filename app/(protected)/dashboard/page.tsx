@@ -22,6 +22,7 @@ import { AlertCircle } from "lucide-react";
 export default function DashboardPage() {
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [celebrationOpen, setCelebrationOpen] = useState(false);
 
   const {
     progress,
@@ -30,7 +31,7 @@ export default function DashboardPage() {
     pendingItemId,
     errorItemId,
     handleToggle,
-  } = useOnboardingProgress();
+  } = useOnboardingProgress(() => setCelebrationOpen(true));
 
   const firstName = getStoredUser()?.firstName ?? "there";
   const completedCount = progress.filter((p) => p.completed).length;
@@ -102,8 +103,8 @@ export default function DashboardPage() {
           setSelectedItemId(item.checklistItemId);
           setDialogOpen(true);
         }}
-  onToggleItem={handleToggle}
-/>
+        onToggleItem={handleToggle}
+      />
 
       <ChecklistItemDialog
         item={dialogItem}
@@ -113,7 +114,10 @@ export default function DashboardPage() {
         isPending={pendingItemId === dialogItem?.checklistItemId}
       />
 
-      <AllDoneCard isComplete={isComplete} />
+      <AllDoneCard
+        open={celebrationOpen}
+        onOpenChange={setCelebrationOpen}
+      />
     </div>
   );
 }
