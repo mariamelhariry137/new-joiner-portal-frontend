@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { apiFetch, ApiError } from "@/lib/api/client";
+import { useRouter } from "next/navigation";
 
 type RegisterResponse = {
   id: number;
@@ -11,6 +12,8 @@ type RegisterResponse = {
 };
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,17 +57,36 @@ export default function RegisterPage() {
         body: JSON.stringify(requestBody),
       });
 
-      setSuccess("Your account has been created successfully.");
-
-      form.reset();
-      setShowPassword(false);
+router.push("/login?registered=true");
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
-    } finally {
+  if (err instanceof ApiError) {
+    if (err.status === 409) {
+      setError(
+        "An account with this email already exists. Please sign in instead."
+      );
+    } else if (err.status === 400) {
+      setError(
+        "Please check your information and make sure all fields are entered correctly."
+      );
+    } else if (
+      err.status === 500 ||
+      err.status === 502 ||
+      err.status === 503
+    ) {
+      setError(
+        "We couldn't create your account right now. Please try again in a moment."
+      );
+    } else {
+      setError(
+        "Something went wrong while creating your account. Please try again."
+      );
+    }
+  } else {
+    setError(
+      "Something went wrong while creating your account. Please try again."
+    );
+  }
+} finally {
       setLoading(false);
     }
   }
