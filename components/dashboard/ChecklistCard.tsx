@@ -1,7 +1,7 @@
 import { Sparkles, ListChecks } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChecklistItemRow } from "@/components/onboarding/ChecklistItemRow";
+import { ChecklistItemRow } from "@/components/dashboard/ChecklistItemRow";
 import type { ProgressItem } from "@/types/onboarding";
 
 type ChecklistCardProps = {
