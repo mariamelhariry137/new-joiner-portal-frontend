@@ -1,6 +1,6 @@
 // frontend/lib/auth/token.ts
 
-const TOKEN_KEY = "token";
+const TOKEN_KEY = "accessToken";
 const USER_KEY = "user";
 
 export interface StoredUser {
