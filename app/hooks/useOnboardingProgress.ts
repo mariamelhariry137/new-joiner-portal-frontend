@@ -3,7 +3,7 @@ import { onboarding } from "@/lib/api/onboarding";
 import { ApiError } from "@/lib/api/client";
 import type { ProgressItem } from "@/types/onboarding";
 
-export function useOnboardingProgress() {
+export function useOnboardingProgress(onComplete?: () => void) {
   const [progress, setProgress] = useState<ProgressItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -11,7 +11,8 @@ export function useOnboardingProgress() {
   const [errorItemId, setErrorItemId] = useState<number | null>(null);
 
   useEffect(() => {
-    onboarding.getProgress()
+    onboarding
+      .getProgress()
       .then(setProgress)
       .catch((err) =>
         setError(
@@ -33,16 +34,34 @@ export function useOnboardingProgress() {
         !item.completed
       );
 
+      const wasLastItem =
+        !item.completed &&
+        result.completed &&
+        progress.every((p) =>
+          p.checklistItemId === item.checklistItemId
+            ? result.completed
+            : p.completed
+        );
+
       setProgress((prev) =>
-        prev.map((p) => ({
-          ...p,
-          ...(p.checklistItemId === result.checklistItemId && {
-            completed: result.completed,
-            completedAt: result.completedAt,
-          }),
-          completionPercentage: result.completionPercentage,
-        }))
+        prev.map((p) =>
+          p.checklistItemId === result.checklistItemId
+            ? {
+                ...p,
+                completed: result.completed,
+                completedAt: result.completedAt,
+                completionPercentage: result.completionPercentage,
+              }
+            : {
+                ...p,
+                completionPercentage: result.completionPercentage,
+              }
+        )
       );
+
+      if (wasLastItem) {
+        onComplete?.();
+      }
     } catch {
       setErrorItemId(item.checklistItemId);
     } finally {
