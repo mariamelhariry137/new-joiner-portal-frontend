@@ -29,7 +29,7 @@ export default function ProfilePage() {
       const token = getToken();
 
       if (!token) {
-        router.push("/login");
+        router.push("/login" );
         return;
       }
 
