@@ -46,12 +46,12 @@ export default function CompanyPage(){
             </h1>
             <CompanyGrid teams={teams} contacts={contacts} policies={policies}
             learningResources={learningResources}/>
-            <div className="fixed bottom-6 right-6 z-50 flex w-fit items-center justify-center rounded-full border-2 border-accent bg-background p-2 shadow-md">
+            <div className="fixed bottom-6 right-6 z-50 flex w-fit items-center justify-center rounded-full border-2 border-accent bg-background p-2 shadow-md" 
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
                 <Button
                     variant="outline"
                     size="icon"
                     aria-label="Scroll to top"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 >
                 <ArrowUpIcon/>
                 </Button>
