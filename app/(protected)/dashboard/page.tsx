@@ -108,7 +108,7 @@ export default function DashboardPage() {
   const firstName = storedUser?.firstName ?? "there";
 
   const completionPercentage = progress[0]?.completionPercentage ?? 0;
-  const completedCount = progress.filter((p) => p.completed).length;
+  const completedCount = progress.filter((p:ProgressItem) => p.completed).length;
   const remainingCount = progress.length - completedCount;
   const isComplete = progress.length > 0 && completedCount === progress.length;
   const nextItem = progress.find((p) => !p.completed);
