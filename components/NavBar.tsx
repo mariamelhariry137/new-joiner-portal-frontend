@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +23,7 @@ import {
   DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 
-import { getStoredUser } from '@/lib/auth/token';
+import { getStoredUser, clearAuth, type StoredUser } from '@/lib/auth/token';
 
 import {
   LayoutDashboard,
@@ -54,8 +55,13 @@ function getInitials(name: string) {
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const storedUser = getStoredUser();
+  const [storedUser, setStoredUserState] = useState<StoredUser | null>(null);
+
+  useEffect(() => {
+    setStoredUserState(getStoredUser());
+  }, []);
 
   const currentUser = {
     name: storedUser
@@ -66,13 +72,12 @@ export default function Navbar() {
   };
 
   function handleLogout() {
-    localStorage.removeItem('accessToken');
-
+    clearAuth();
     window.location.href = '/login';
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="flex h-16 items-center justify-between px-6">
 
         {/* Left side */}
@@ -124,7 +129,7 @@ export default function Navbar() {
                         {label}
 
                         {isActive && (
-                          <span className="absolute inset-x-3 -bottom-[1px] h-0.5 rounded-full bg-primary" />
+                          <span className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-primary" />
                         )}
                       </Link>
                     </NavigationMenuItem>
@@ -154,6 +159,7 @@ export default function Navbar() {
             className="w-56"
           >
 
+            
             {/* User info */}
             <DropdownMenuGroup>
 

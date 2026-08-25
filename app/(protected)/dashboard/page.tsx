@@ -1,156 +1,57 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { onboarding } from "@/lib/api/onboarding";
-import { ChecklistItemRow } from "@/components/onboarding/ChecklistItemRow";
+import { useState } from "react";
 import { ChecklistItemDialog } from "@/components/onboarding/ChecklistItemDialog";
-import type { ProgressItem } from "@/types/onboarding";
-import { ApiError } from "@/lib/api/client";
+import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
+import { TasksSummaryCard } from "@/components/dashboard/TasksSummaryCard";
+import { CompletionCard } from "@/components/dashboard/CompletionCard";
+import { ChecklistCard } from "@/components/dashboard/ChecklistCard";
+import { CompanyHubCard } from "@/components/dashboard/CompanyHubCard";
+import { TipCard } from "@/components/dashboard/TipCard";
+import { AllDoneCard } from "@/components/dashboard/AllDoneCard";
+import { useOnboardingProgress } from "@/app/hooks/useOnboardingProgress";
 import { getStoredUser } from "@/lib/auth/token";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  AlertCircle,
-  ArrowRight,
-  Building2,
-  CheckCircle2,
-  Circle,
-  ListChecks,
-  Lightbulb,
-  PartyPopper,
-  Sparkles,
-} from "lucide-react";
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function DashboardPage() {
-  const [progress, setProgress] = useState<ProgressItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [selectedItem, setSelectedItem] = useState<ProgressItem | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [pendingItemId, setPendingItemId] = useState<number | null>(null);
-  const [errorItemId, setErrorItemId] = useState<number | null>(null);
+  const {
+    progress,
+    loading,
+    error,
+    pendingItemId,
+    errorItemId,
+    handleToggle,
+  } = useOnboardingProgress();
 
-  const [celebrationOpen, setCelebrationOpen] = useState(false);
-  const hasCelebrated = useRef(false);
+  const firstName = getStoredUser()?.firstName ?? "there";
+  const completedCount = progress.filter((p) => p.completed).length;
+  const isComplete =
+    progress.length > 0 && completedCount === progress.length;
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const progressData = await onboarding.getProgress();
-        setProgress(progressData);
-      } catch (err) {
-        setError(
-          err instanceof ApiError ? err.message : "Failed to load checklist."
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    load();
-  }, []);
-
-  function handleOpenDialog(item: ProgressItem) {
-    setSelectedItem(item);
-    setDialogOpen(true);
-  }
-
-  async function handleToggle(item: ProgressItem) {
-    setPendingItemId(item.checklistItemId);
-    setErrorItemId(null);
-
-    try {
-      const result = await onboarding.updateChecklistItem(
-        item.checklistItemId,
-        !item.completed
-      );
-
-      setProgress((prev) =>
-        prev.map((p) =>
-          p.checklistItemId === result.checklistItemId
-            ? {
-                ...p,
-                completed: result.completed,
-                completedAt: result.completedAt,
-                completionPercentage: result.completionPercentage,
-              }
-            : {
-                ...p,
-                completionPercentage: result.completionPercentage,
-              }
-        )
-      );
-    } catch {
-      setErrorItemId(item.checklistItemId);
-    } finally {
-      setPendingItemId(null);
-    }
-  }
-
-  const storedUser = getStoredUser();
-  const firstName = storedUser?.firstName ?? "there";
-
-  const completionPercentage = progress[0]?.completionPercentage ?? 0;
-  const completedCount = progress.filter((p:ProgressItem) => p.completed).length;
-  const remainingCount = progress.length - completedCount;
-  const isComplete = progress.length > 0 && completedCount === progress.length;
-  const nextItem = progress.find((p) => !p.completed);
-
-  const dialogItem = selectedItem
-    ? progress.find((p) => p.checklistItemId === selectedItem.checklistItemId) ??
-      selectedItem
-    : null;
-
-  useEffect(() => {
-    if (loading) return;
-
-    if (isComplete && !hasCelebrated.current) {
-      hasCelebrated.current = true;
-      setCelebrationOpen(true);
-    }
-
-    if (!isComplete) {
-      hasCelebrated.current = false;
-    }
-  }, [isComplete, loading]);
+  const dialogItem =
+    progress.find((p) => p.checklistItemId === selectedItemId) ?? null;
 
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl space-y-6 p-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-56" />
-          <Skeleton className="h-4 w-72" />
-        </div>
+        <Skeleton className="h-8 w-56" />
+
         <div className="grid grid-cols-3 gap-4">
-          <Skeleton className="h-24 rounded-xl" />
-          <Skeleton className="h-24 rounded-xl" />
-          <Skeleton className="h-24 rounded-xl" />
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
         </div>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="space-y-3 lg:col-span-2">
-            <Skeleton className="h-16 w-full rounded-lg" />
-            <Skeleton className="h-16 w-full rounded-lg" />
-            <Skeleton className="h-16 w-full rounded-lg" />
-          </div>
-          <Skeleton className="h-40 rounded-xl" />
-        </div>
+
+        <Skeleton className="h-16 w-full rounded-lg" />
       </div>
     );
   }
@@ -169,182 +70,40 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Welcome back, {firstName}
-        </h1>
-        <p className="text-muted-foreground mt-1.5">
-          Here&apos;s where you stand in your onboarding journey.
-        </p>
-      </div>
+      <WelcomeHeader firstName={firstName} />
 
-      {/* Stat strip */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="shadow-sm">
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
-              <ListChecks className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold tabular-nums">{progress.length}</p>
-              <p className="text-xs text-muted-foreground">Total tasks</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-600/10">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold tabular-nums">{completedCount}</p>
-              <p className="text-xs text-muted-foreground">Completed</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardContent className="flex items-center gap-3 py-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-              <Circle className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold tabular-nums">{remainingCount}</p>
-              <p className="text-xs text-muted-foreground">Remaining</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main two-column layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left: progress + next up + checklist */}
         <div className="space-y-6 lg:col-span-2">
-          <Card className="overflow-hidden border-muted-foreground/10 shadow-sm">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <ListChecks className="h-4 w-4 text-muted-foreground" />
-                  Onboarding progress
-                </CardTitle>
-                <Badge
-                  variant={isComplete ? "default" : "secondary"}
-                  className={isComplete ? "bg-green-600 hover:bg-green-600" : ""}
-                >
-                  {isComplete ? (
-                    <span className="flex items-center gap-1">
-                      <PartyPopper className="h-3 w-3" />
-                      All done
-                    </span>
-                  ) : (
-                    `${completedCount}/${progress.length} completed`
-                  )}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Progress
-                  value={completionPercentage}
-                  className={isComplete ? "h-2.5 flex-1 [&>div]:bg-green-600" : "h-2.5 flex-1"}
-                />
-                <span className="text-sm font-semibold tabular-nums w-11 text-right">
-                  {completionPercentage}%
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+          <TasksSummaryCard
+            total={progress.length}
+            completed={completedCount}
+            remaining={progress.length - completedCount}
+          />
 
-          {nextItem && (
-            <Card className="border-primary/20 bg-primary/5 shadow-sm">
-              <CardContent className="flex items-center justify-between gap-4 py-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Next up
-                    </p>
-                    <p className="truncate text-sm font-medium">{nextItem.title}</p>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  disabled={pendingItemId === nextItem.checklistItemId}
-                  onClick={() => handleToggle(nextItem)}
-                >
-                  Mark complete
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="space-y-2">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Checklist
-            </h2>
-
-            <div className="space-y-2">
-              {progress.length === 0 ? (
-                <div className="rounded-lg border border-dashed p-8 text-center">
-                  <ListChecks className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    No checklist items yet. Check back soon.
-                  </p>
-                </div>
-              ) : (
-                progress.map((item) => (
-                  <ChecklistItemRow
-                    key={item.checklistItemId}
-                    item={item}
-                    onOpenDrawer={() => handleOpenDialog(item)}
-                    onToggle={() => handleToggle(item)}
-                    isPending={pendingItemId === item.checklistItemId}
-                    hasError={errorItemId === item.checklistItemId}
-                  />
-                ))
-              )}
-            </div>
-          </div>
+          <CompletionCard
+            percentage={progress[0]?.completionPercentage ?? 0}
+            completed={completedCount}
+            total={progress.length}
+            isComplete={isComplete}
+          />
         </div>
 
-        {/* Right: sidebar */}
         <div className="flex flex-col gap-6">
-          <Link href="/company">
-            <Card className="shadow-sm transition-colors hover:bg-accent/50">
-              <CardContent className="flex items-center justify-between py-4">
-                <div className="flex items-center gap-3">
-                  <Building2 className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Company hub</p>
-                    <p className="text-xs text-muted-foreground">
-                      Teams, contacts, policies, resources
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Card className="border-amber-200 bg-amber-50 shadow-sm dark:border-amber-900 dark:bg-amber-950/30">
-            <CardContent className="flex gap-3 p-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40">
-                <Lightbulb className="h-4 w-4 text-amber-600" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">Tip</p>
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  Click any checklist item to see more details and track when
-                  it was completed.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <CompanyHubCard />
+          <TipCard />
         </div>
       </div>
+
+      <ChecklistCard
+        items={progress}
+        pendingItemId={pendingItemId}
+        errorItemId={errorItemId}
+        onOpenItem={(item) => {
+          setSelectedItemId(item.checklistItemId);
+          setDialogOpen(true);
+        }}
+  onToggleItem={handleToggle}
+/>
 
       <ChecklistItemDialog
         item={dialogItem}
@@ -354,24 +113,7 @@ export default function DashboardPage() {
         isPending={pendingItemId === dialogItem?.checklistItemId}
       />
 
-      <Dialog open={celebrationOpen} onOpenChange={setCelebrationOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader className="items-center text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-600/10">
-              <PartyPopper className="h-8 w-8 text-green-600" />
-            </div>
-            <DialogTitle className="mt-2 text-xl">
-              You&apos;re all caught up!
-            </DialogTitle>
-            <DialogDescription className="text-center">
-              Every onboarding task has been completed. Nice work.
-            </DialogDescription>
-          </DialogHeader>
-          <Button className="w-full" onClick={() => setCelebrationOpen(false)}>
-            Nice
-          </Button>
-        </DialogContent>
-      </Dialog>
+      <AllDoneCard isComplete={isComplete} />
     </div>
   );
 }
