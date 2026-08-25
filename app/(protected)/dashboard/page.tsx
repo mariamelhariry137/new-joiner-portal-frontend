@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChecklistItemDialog } from "@/components/onboarding/ChecklistItemDialog";
+import { ChecklistItemDialog } from "@/components/dashboard/ChecklistItemDialog";
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { TasksSummaryCard } from "@/components/dashboard/TasksSummaryCard";
 import { CompletionCard } from "@/components/dashboard/CompletionCard";
