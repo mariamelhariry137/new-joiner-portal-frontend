@@ -4,6 +4,9 @@ import CompanyGrid from "@/components/company/CompanyGrid"
 import { contentApi, Team, Policy, Contact,LearningResource } from "@/lib/api/content"
 import { useEffect, useState } from "react"
 
+import { Button } from "@base-ui/react"
+import { ArrowUpIcon } from "lucide-react"
+
 export default function CompanyPage(){
 
     const [teams, setTeams]=useState<Team[]>([])
@@ -38,6 +41,16 @@ export default function CompanyPage(){
             </h1>
             <CompanyGrid teams={teams} contacts={contacts} policies={policies}
             learningResources={learningResources}/>
+            <div className="fixed bottom-6 right-6 z-50 flex w-fit items-center justify-center rounded-full border-2 border-accent bg-background p-2 shadow-md">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Scroll to top"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                >
+                <ArrowUpIcon/>
+                </Button>
+            </div>
         </main>
     )
 }
