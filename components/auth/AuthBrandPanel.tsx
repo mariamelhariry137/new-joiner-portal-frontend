@@ -1,3 +1,4 @@
+import Image from 'next/image';
 type FeatureItemProps = {
   title: string;
   description: string;
@@ -35,9 +36,13 @@ export default function AuthBrandPanel() {
       {/* Logo */}
       <div className="relative z-10">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E60000] text-xl font-bold text-white shadow-lg">
-            V
-          </div>
+          <Image
+            src="/logo.png"
+            alt="VOIS"
+            width={48}
+            height={48}
+            className="rounded-full"
+          />
 
           <div>
             <p className="text-xl font-bold tracking-wide">
