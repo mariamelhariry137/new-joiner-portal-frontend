@@ -18,6 +18,7 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
@@ -118,6 +119,16 @@ export default function DashboardPage() {
         open={celebrationOpen}
         onOpenChange={setCelebrationOpen}
       />
+      <Link
+  href="/faq"
+  className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-[#E60000] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-[#C80000] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#E60000]/20"
+>
+  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+    ?
+  </span>
+
+  FAQ
+</Link>
     </div>
   );
 }
