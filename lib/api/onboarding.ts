@@ -1,36 +1,25 @@
-import { apiFetch } from "./client";
+import { apiAuthFetch } from "./client";
 import type {
   ChecklistItem,
   ProgressItem,
   UpdateChecklistItemResult,
 } from "@/types/onboarding";
-import { getToken } from "../auth/token";
-
-function authHeaders(): HeadersInit {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 export const onboarding = {
   getChecklist() {
-    return apiFetch<ChecklistItem[]>("/api/onboarding/checklist-items", {
-      headers: authHeaders(),
-    });
+    return apiAuthFetch<ChecklistItem[]>("/api/onboarding/checklist-items");
   },
 
   getProgress() {
-    return apiFetch<ProgressItem[]>("/api/onboarding/progress", {
-      headers: authHeaders(),
-    });
+    return apiAuthFetch<ProgressItem[]>("/api/onboarding/progress");
   },
 
   updateChecklistItem(itemId: number, completed: boolean) {
-    return apiFetch<UpdateChecklistItemResult>(
+    return apiAuthFetch<UpdateChecklistItemResult>(
       `/api/onboarding/progress/${itemId}`,
       {
         method: "PATCH",
-        headers: authHeaders(),
-        body: JSON.stringify({ completed }),
+        body: { completed },
       }
     );
   },

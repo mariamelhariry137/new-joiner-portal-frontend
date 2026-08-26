@@ -61,7 +61,7 @@ export default function Navbar() {
 
   useEffect(() => {
     setStoredUserState(getStoredUser());
-  }, []);
+  }, [pathname]);
 
   const currentUser = {
     name: storedUser
