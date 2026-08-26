@@ -1,5 +1,7 @@
 "use client";
 
+import Image from 'next/image';
+
 import {
   useEffect,
   useState,
@@ -116,7 +118,7 @@ setStoredUser({
   lastName: response.lastName,
 });
 
-      router.replace("/profile");
+      router.replace("/dashboard");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -131,19 +133,23 @@ setStoredUser({
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0d0d0d] px-4 py-10">
 
-      <div className="absolute -left-40 -top-40 h-[450px] w-[450px] rounded-full bg-[#E60000]/20 blur-3xl" />
+      <div className="absolute -left-40 -top-40 h-112.5 w-112.5 rounded-full bg-[#E60000]/20 blur-3xl" />
 
-      <div className="absolute -bottom-40 -right-40 h-[450px] w-[450px] rounded-full bg-[#E60000]/10 blur-3xl" />
+      <div className="absolute -bottom-40 -right-40 h-112.5 w-112.5 rounded-full bg-[#E60000]/10 blur-3xl" />
 
       <div className="relative grid w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-white shadow-2xl lg:grid-cols-2">
 
         {/* Left branding section */}
-        <section className="hidden min-h-[650px] bg-[#111111] p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <section className="hidden min-h-162.5 bg-[#111111] p-12 text-white lg:flex lg:flex-col lg:justify-between">
 
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E60000] text-xl font-bold">
-              V
-            </div>
+            <Image
+              src="/logo.png"
+              alt="VOIS"
+              width={48}
+              height={48}
+              className="rounded-full"
+            />
 
             <div>
               <p className="text-xl font-bold">VOIS</p>
@@ -269,6 +275,16 @@ setStoredUser({
                 {loading ? "Signing in..." : "Sign in"}
               </button>
             </form>
+            <p className="mt-6 text-center text-sm text-[#54575A]">
+              Don&apos;t have an account?{" "}
+              <button
+                type="button"
+                onClick={() => router.push("/register")}
+                className="font-semibold text-[#E60000] hover:underline"
+              >
+                Register
+              </button>
+            </p>
           </div>
         </section>
       </div>

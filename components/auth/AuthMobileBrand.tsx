@@ -1,9 +1,14 @@
+import Image from 'next/image';
 export default function AuthMobileBrand() {
   return (
     <div className="mb-8 flex items-center gap-3 lg:hidden">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E60000] font-bold text-white">
-        V
-      </div>
+      <Image
+        src="/logo.png"
+        alt="VOIS"
+        width={48}
+        height={48}
+        className="rounded-full"
+      />
 
       <div>
         <p className="font-bold text-gray-950">
