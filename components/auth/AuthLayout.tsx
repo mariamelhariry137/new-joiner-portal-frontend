@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import AuthBrandPanel from ".auth/components/AuthBrandPanel";
+import AuthBrandPanel from "./AuthBrandPanel";
 
 type AuthLayoutProps = {
   children: ReactNode;
