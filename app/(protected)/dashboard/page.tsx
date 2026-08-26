@@ -43,10 +43,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl space-y-6 p-6">
-        <Skeleton className="h-8 w-56" />
+      <div className="mx-auto max-w-6xl space-y-4 p-4 sm:space-y-6 sm:p-6">
+        <Skeleton className="h-8 w-40 sm:w-56" />
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-24 rounded-xl" />
           ))}
@@ -59,7 +59,7 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-6xl p-6">
+      <div className="mx-auto max-w-6xl p-4 sm:p-6">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Something went wrong</AlertTitle>
@@ -70,11 +70,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
+    <div className="mx-auto max-w-6xl space-y-4 p-4 sm:space-y-6 sm:p-6">
       <WelcomeHeader firstName={firstName} />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-2">
           <TasksSummaryCard
             total={progress.length}
             completed={completedCount}
@@ -89,7 +89,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:gap-6">
           <CompanyHubCard />
           <TipCard />
         </div>
